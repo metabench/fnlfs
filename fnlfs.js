@@ -595,7 +595,7 @@ const walk = (start_path, options = {}, callback) => {
                     let res_next;
 
                     if (include_dirs) res_next = next(dir);
-                    console.log('res_next', res_next);
+                    //console.log('res_next', res_next);
                     if (res_next && res_next.then) await res_next;
                     let md;
                     let map_md = {};
@@ -658,7 +658,7 @@ const walk = (start_path, options = {}, callback) => {
                                 // And the event 
 
                                 res_next = next(new_file);
-                                console.log('res_next', res_next);
+                                //console.log('res_next', res_next);
                                 if (res_next && res_next.then) await res_next;
                                 //next(new_file);
                             }

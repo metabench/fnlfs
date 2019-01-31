@@ -4,8 +4,8 @@
     "license": "MIT",
     "dependencies": {
         "date-and-time": "^0.6.3",
-        "file-type": "^10.7.0",
-        "fnl": "^0.0.8",
+        "file-type": "^10.7.1",
+        "fnl": "0.0.8",
         "lang-mini": "^0.0.8",
         "mv": "^2.1.1",
         "ncp": "^2.0.0",
@@ -20,5 +20,5 @@
         "type": "git",
         "url": "https://github.com/metabench/fnlfs.git"
     },
-    "version": "0.0.8"
+    "version": "0.0.9"
 }
