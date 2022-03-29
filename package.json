@@ -3,16 +3,16 @@
     "main": "fnlfs.js",
     "license": "MIT",
     "dependencies": {
-        "date-and-time": "^0.6.3",
-        "file-type": "^10.7.1",
-        "fnl": "0.0.8",
-        "lang-mini": "^0.0.8",
+        "date-and-time": "^2.3.0",
+        "file-type": "^17.1.1",
+        "fnl": "^0.0.20",
+        "lang-mini": "^0.0.22",
         "mv": "^2.1.1",
         "ncp": "^2.0.0",
-        "rimraf": "^2.6.3"
+        "rimraf": "^3.0.2"
     },
     "engines": {
-        "node": ">=9.3.0"
+        "node": ">=12.0.0"
     },
     "description": "File system tools that use functional programming such as observables, async/await, promises.",
     "author": "James Vickers <james@metabench.com>",
@@ -20,5 +20,5 @@
         "type": "git",
         "url": "https://github.com/metabench/fnlfs.git"
     },
-    "version": "0.0.9"
+    "version": "0.0.22"
 }

@@ -27,7 +27,22 @@ the original files, and the original file names in the metadata.
 
 Want specific low resolution paths too. Low res would be faster for looking through with motion detection.
 // Could have a file in the path saying what it's to be used for.
+
+
+// Want to make this more observable in operation
+//  Including logs
+//  Should return the data simply if used with await.
+//   There will be other functions / ways to process the data as well as have functions to process logs.
+
+
+Need features that make using streams easier...
+  Though this originally was made to avoid streams.
+
+
+
 */
+
+
 const lang = require('lang-mini');
 const fnl = require('fnl');
 const prom_or_cb = fnl.prom_or_cb;
@@ -36,9 +51,7 @@ const cb_to_prom_or_cb = fnl.cb_to_prom_or_cb;
 const observable = fnl.observable;
 const def = lang.is_defined;
 const date_and_time = require('date-and-time');
-
 const file_type = require('file-type');
-
 const crypto = require('crypto');
 const get_a_sig = lang.get_a_sig;
 
@@ -76,6 +89,18 @@ var call_multi = lang.call_multi;
 const {
     promisify
 } = require('util');
+
+
+
+
+// Probably will be better to move to streaming reads of files, and making the stream an optional return type.
+//  Moving more towards towards handling streams.
+
+
+
+
+
+const move = promisify(require('mv'));
 
 const p_readdir = promisify(fs.readdir);
 const p_stat = promisify(fs.stat);
@@ -394,9 +419,7 @@ const dir_contents = (path, ...a2) => {
                     let fpath = libpath.join(path, item);
                     let item_stat = await p_stat(fpath);
                     //console.log('item_stat', item_stat);
-
                     // ignore list...?
-
                     if (item_stat.isDirectory()) {
                         //dirs.push();
                         new_dir = new Dir({
@@ -407,15 +430,11 @@ const dir_contents = (path, ...a2) => {
                         //next({
                         //    'dir': new_dir
                         //});
-
                         passes_filter = filter(new_dir);
-
                         if (passes_filter) {
                             next(new_dir);
                             all.push(new_dir);
                         }
-
-
                     }
                     if (item_stat.isFile()) {
                         //files.push();
@@ -455,6 +474,9 @@ const dir_contents = (path, ...a2) => {
 
 const dir_files = (path, options = {}, callback) => {
     // if it individually gets metadata, it's an observable.
+
+    
+
     return obs_or_cb((next, complete, error) => {
         (async () => {
             // get list of files
@@ -738,7 +760,6 @@ const save_object = (path, thing_to_save, callback) => {
     }, callback);
 }
 
-const move = promisify(require('mv'));
 
 const save = (path, thing_to_save, callback) => {
 
@@ -775,46 +796,77 @@ const save = (path, thing_to_save, callback) => {
     */
 }
 
+// Loading multiple files in a list...?
 const load = (path, options = {}, callback) => {
-
     // Possibility of options.
     //  If the file does not exist, could load a default
 
-    return prom_or_cb((resolve, reject) => {
+    // options being 'stream'?
+    //  this should fit into the 'vhl' system.
 
-        (async () => {
+    if (options.stream === true) {
+        const res = fs.createReadStream(path);
 
-            let buf;
+        // Possible monitoring as an option, using the callback?
 
-            try {
-                buf = await p_readFile(path);
+        /*
+        next({
+            stream: readStream,
+            file: file
+        });
+        readStream.on('data', function (chunk) {
+            //data += chunk;
+        }).on('end', function () {
+            //console.log(data);
 
-                let ext = libpath.extname(path);
-                //console.log('ext', ext);
-                let res;
+            solve();
+        });
+        */
+        return res;
+        // return the stream object.
 
-                if (ext === '.json') {
-                    res = JSON.parse(buf.toString());
-                } else {
+        //console.trace();
+        //throw 'NYI';
 
-                    if (ext === '.txt') {
-                        res = (buf.toString());
+    } else {
+        return prom_or_cb((resolve, reject) => {
+
+            (async () => {
+                let buf;
+    
+                try {
+                    buf = await p_readFile(path);
+    
+                    let ext = libpath.extname(path);
+                    //console.log('ext', ext);
+                    let res;
+    
+                    if (ext === '.json') {
+                        res = JSON.parse(buf.toString());
                     } else {
-                        res = buf;
+    
+                        if (ext === '.txt') {
+                            res = (buf.toString());
+                        } else {
+                            res = buf;
+                        }
+                        resolve(res);
                     }
                     resolve(res);
+                } catch (err) {
+                    if (options.error_default_value) {
+                        resolve(options.error_default_value);
+                    }
+                    //console.log('err', err);
+                    //throw 'stop';
+                    reject(err);
                 }
-                resolve(res);
-            } catch (err) {
-                if (options.error_default_value) {
-                    resolve(options.error_default_value);
-                }
-                //console.log('err', err);
-                //throw 'stop';
-                reject(err);
-            }
-        })();
-    }, callback);
+            })();
+        }, callback);
+    }
+
+
+    
 }
 
 const exists = (path, callback) => {
@@ -1493,6 +1545,10 @@ const s_dt_from_filename = (name) => {
     return s;
 }
 
+// Some kinds of filtering?
+//  Or could do that easily with functional programming?
+
+
 const fnlfs = {
     'file_checksum': file_checksum,
     'file_type': file_type,
@@ -1500,6 +1556,7 @@ const fnlfs = {
     'walk': walk,
     'file_walk': file_walk,
     'dir_contents': dir_contents,
+    'dir_files': dir_files,
     'save_dir_metadata': save_dir_metadata,
     'save_file_metadata': save_file_metadata,
     'load_file_metadata': load_file_metadata,
@@ -1684,8 +1741,6 @@ if (require.main === module) {
         }
         //await walk_ensure_metatata();
         // but need to check if these are directories or watnot.
-
-
         let daily_dirs = () => {
             move_dir_files_to_daily_dirs()
         }
@@ -1694,6 +1749,4 @@ if (require.main === module) {
 } else {
     // this module was not run directly from the command line and probably loaded by something else
 }
-
-
 module.exports = fnlfs;
