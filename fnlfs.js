@@ -108,6 +108,8 @@ const p_writeFile = promisify(fs.writeFile);
 const p_readFile = promisify(fs.readFile);
 const p_unlink = promisify(fs.unlink);
 
+// delete?
+
 const mkdirp = require('mkdirp');
 const p_mkdirp = (promisify(mkdirp));
 
@@ -126,6 +128,10 @@ const delay = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/** @function file_checksum 
+ * @param  {String} file_path
+ * @param  {Function} callback
+ */
 const file_checksum = (file_path, callback) => {
     return prom_or_cb((resolve, reject) => {
         var algo = 'sha256';
@@ -151,6 +157,10 @@ const file_checksum = (file_path, callback) => {
         });
     }, callback);
 }
+
+/** @constant map_mime_types
+    @type {Object}
+*/
 
 const map_mime_types = {
     'html': 'text/html',
@@ -891,9 +901,10 @@ const exists = (path, callback) => {
 
 const ensure_deleted = (path, callback) => {
     return prom_or_cb(async (resolve, reject) => {
+        throw 'NYI';
         let e = await exists(path);
         if (e) {
-            await delete(e);
+            //await delete(e);
         }
         resolve(true);
         /*
@@ -1698,8 +1709,8 @@ if (require.main === module) {
                                     let fname_a = libpath.basename(checksum_listing[0].path);
                                     let fname_b = libpath.basename(checksum_listing[1].path);
 
-                                    console.log('fname_a', fname_a);
-                                    console.log('fname_b', fname_b);
+                                    //console.log('fname_a', fname_a);
+                                    //console.log('fname_b', fname_b);
 
                                     if (fname_a.length > fname_b.length) {
                                         // keep a
