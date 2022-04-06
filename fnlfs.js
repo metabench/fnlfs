@@ -51,7 +51,11 @@ const cb_to_prom_or_cb = fnl.cb_to_prom_or_cb;
 const observable = fnl.observable;
 const def = lang.is_defined;
 const date_and_time = require('date-and-time');
-const file_type = require('file-type');
+
+
+const file_type = import('file-type');
+
+
 const crypto = require('crypto');
 const get_a_sig = lang.get_a_sig;
 
