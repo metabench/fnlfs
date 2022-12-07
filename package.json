@@ -3,9 +3,9 @@
     "main": "fnlfs.js",
     "license": "MIT",
     "dependencies": {
-        "date-and-time": "^2.3.1",
-        "file-type": "^17.1.1",
-        "fnl": "^0.0.22",
+        "date-and-time": "^2.4.1",
+        "file-type": "^18.0.0",
+        "fnl": "^0.0.23",
         "lang-mini": "^0.0.26",
         "mv": "^2.1.1",
         "ncp": "^2.0.0",
@@ -20,5 +20,5 @@
         "type": "git",
         "url": "https://github.com/metabench/fnlfs.git"
     },
-    "version": "0.0.25"
+    "version": "0.0.26"
 }

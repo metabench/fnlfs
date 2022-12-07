@@ -38,6 +38,14 @@ Want specific low resolution paths too. Low res would be faster for looking thro
 Need features that make using streams easier...
   Though this originally was made to avoid streams.
 
+Multi-Callback to iterator functions...?
+May be best to rewrite as iterator functions because it needs to keep track of the place.
+  As in it may have the names of various dirs already loaded but it has not reached them yet.
+
+  Then can work on filtering iterators.
+
+
+
 
 
 */
@@ -93,6 +101,9 @@ var call_multi = lang.call_multi;
 const {
     promisify
 } = require('util');
+
+// A directory Iterator could be of use.
+// . An async iterator, most likely.
 
 
 
@@ -392,7 +403,9 @@ const dir_contents = (path, ...a2) => {
         options = a2[0];
         callback = a2[1];
     }
-    const filter = options.filter;
+    const filter = options.filter || false;
+
+    // Need better error raising.
 
     return obs_or_cb((next, complete, error) => {
         (async () => {
@@ -414,7 +427,9 @@ const dir_contents = (path, ...a2) => {
             }
             // get list of files
             // examine files
+            //console.log('pre await read dir');
             let content = await p_readdir(path);
+            //console.log('post await read dir');
             //console.log('content', content);
             // say its complete with all of the files....
             //let files = [];
@@ -426,52 +441,65 @@ const dir_contents = (path, ...a2) => {
             for (let item of content) {
                 let passes_filter = true;
                 if (filter) {
-
+                    passes_filter = filter(item);
 
                 }
                 if (passes_filter && !map_ignore[item]) {
                     let fpath = libpath.join(path, item);
-                    let item_stat = await p_stat(fpath);
-                    //console.log('item_stat', item_stat);
-                    // ignore list...?
-                    if (item_stat.isDirectory()) {
-                        //dirs.push();
-                        new_dir = new Dir({
-                            name: item,
-                            path: fpath
-                        });
+                    //console.log('fpath', fpath);
 
-                        //next({
-                        //    'dir': new_dir
-                        //});
-                        passes_filter = filter(new_dir);
-                        if (passes_filter) {
-                            next(new_dir);
-                            all.push(new_dir);
+                    //console.log('pre pstat');
+
+                    try {
+                        let item_stat = await p_stat(fpath);
+                        //console.log('post pstat');
+                        //console.log('item_stat', item_stat);
+                        // ignore list...?
+                        if (item_stat.isDirectory()) {
+                            //dirs.push();
+                            new_dir = new Dir({
+                                name: item,
+                                path: fpath
+                            });
+
+                            //next({
+                            //    'dir': new_dir
+                            //});
+                            //passes_filter = filter(new_dir);
+                            //if (passes_filter) {
+                                next(new_dir);
+                                all.push(new_dir);
+                            //}
                         }
-                    }
-                    if (item_stat.isFile()) {
-                        //files.push();
-                        new_file = new File({
-                            name: item,
-                            stat: item_stat,
-                            path: fpath
-                        })
-                        if (map_md[new_file.name]) {
-                            new_file._md = map_md[new_file.name];
-                        }
-                        //next({
-                        //    'file': new_file
-                        //});
-                        if (filter) {
-                            passes_filter = filter(new_file);
+                        if (item_stat.isFile()) {
+                            //files.push();
+                            new_file = new File({
+                                name: item,
+                                stat: item_stat,
+                                path: fpath
+                            })
+                            if (map_md[new_file.name]) {
+                                new_file._md = map_md[new_file.name];
+                            }
+                            //next({
+                            //    'file': new_file
+                            //});
+                            if (filter) {
+                                passes_filter = filter(new_file);
+                            }
+
+                            if (passes_filter) {
+                                next(new_file);
+                                all.push(new_file);
+                            }
                         }
 
-                        if (passes_filter) {
-                            next(new_file);
-                            all.push(new_file);
-                        }
+                    } catch (err) {
+                        next({error: err});
+                        all.push({error: err});
                     }
+
+                    
                 }
             }
             complete(all);
@@ -488,8 +516,6 @@ const dir_contents = (path, ...a2) => {
 
 const dir_files = (path, options = {}, callback) => {
     // if it individually gets metadata, it's an observable.
-
-    
 
     return obs_or_cb((next, complete, error) => {
         (async () => {
@@ -582,6 +608,115 @@ const file_walk = (start_path, callback) => {
 
 
 }
+
+const iter = {
+    walk: (start_path, options) => {
+
+        const {filter} = options;
+        const file_filter = filter?.file;
+        const file_filter_size = file_filter?.size;
+        const file_filter_size_max = file_filter_size?.max;
+        console.log('file_filter_size_max', file_filter_size_max);
+
+        // Provide an iterator (or array?) for walking the files.
+
+        /*
+        function* range(start, end) {
+            for (var i = start; i < end; i++) {
+              yield i;
+            }
+          }
+          */
+        //let file_path = start_path;
+        let file_index = false;
+        let arr_dir_contents = false;
+        
+        async function* walk(dir_path) {
+            let [files, dirs] = [[], []];
+            
+
+            if (arr_dir_contents === false) {
+
+
+                //console.log('dir_path', dir_path);
+
+                try {
+                    let contents = await dir_contents(dir_path);
+                    //console.log('post await dir_contents');
+                    each(contents, item => {
+                        let passes_filter = true;
+                        if (item instanceof File) {
+                            if (file_filter_size_max) {
+                                if (!(item.size <= file_filter_size_max)) {
+                                    //files.push(item);
+                                    passes_filter = false;
+                                }
+                                
+
+                                //console.log('item', item);
+                                //throw 'stop';
+                            }
+                            if (passes_filter && file_filter_size_min) {
+                                if (!(item.size >= file_filter_size_min)) {
+                                    //files.push(item);
+                                    passes_filter = false;
+                                }
+                                
+
+                                //console.log('item', item);
+                                //throw 'stop';
+                            }
+
+                            if (passes_filter) {
+                                files.push(item);
+                            }
+                            
+                        }
+                        if (item instanceof Dir) dirs.push(item);
+                    });
+
+                    const y_obj = {
+                        path: dir_path, files, dirs
+                    }
+                    yield y_obj;
+
+                    const nested_paths = dirs.map(x => x.path);
+
+                    for (const nested_path of nested_paths) {
+                        //console.log('nested_path', nested_path); // Prints "Hello"
+                        yield* walk(nested_path);
+                    }
+                } catch (err) {
+                    const y_obj = {
+                        path: dir_path, error: err
+                    }
+                    yield y_obj;
+                }
+
+                
+
+
+                
+
+                // then a function to process the dir...?
+
+                //console.log('contents', contents);
+            }
+            // yield [path, files, dirs]
+            
+            //yield 2;
+
+            //for (var i = start; i < end; i++) {
+            //    yield i;
+            //}
+
+        }
+        return walk(start_path);
+
+
+    }
+}
+
 const walk = (start_path, options = {}, callback) => {
     // observable or callback
     // returned observable will have 'next' events with different properties depending on what it's doing.
@@ -844,7 +979,6 @@ const load = (path, options = {}, callback) => {
 
     } else {
         return prom_or_cb((resolve, reject) => {
-
             (async () => {
                 let buf;
     
@@ -878,9 +1012,6 @@ const load = (path, options = {}, callback) => {
             })();
         }, callback);
     }
-
-
-    
 }
 
 const exists = (path, callback) => {
@@ -1601,7 +1732,9 @@ const fnlfs = {
     'File': File,
 
 
-    's_dt_from_filename': s_dt_from_filename
+    's_dt_from_filename': s_dt_from_filename,
+
+    iter
 };
 
 if (require.main === module) {
@@ -1759,6 +1892,24 @@ if (require.main === module) {
         let daily_dirs = () => {
             move_dir_files_to_daily_dirs()
         }
+
+        let test_iterator_walk = async() => {
+            const it = iter.walk(libpath.resolve('./'));
+            console.log('it', it);
+
+            let c = 0;
+            for await (const val of it) {
+                //console.log(val); // Prints "Hello"
+                const {path, files, dirs} = val;
+                console.log('path', path);
+                c++;
+              }
+            console.log('c', c);
+        }
+        const r = await test_iterator_walk();
+        console.log('r', r);
+        
+        
 
     })();
 } else {
