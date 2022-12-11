@@ -610,14 +610,16 @@ const file_walk = (start_path, callback) => {
 }
 
 const iter = {
-    walk: (start_path, options) => {
+    walk: (start_path, options = {}) => {
 
         const {filter} = options;
         const file_filter = filter?.file;
         const file_filter_size = file_filter?.size;
         const file_filter_size_max = file_filter_size?.max;
-        console.log('file_filter_size_max', file_filter_size_max);
+        const file_filter_size_min = file_filter_size?.min;
+        //console.log('file_filter_size_max', file_filter_size_max);
 
+        const file_filter_extension = file_filter?.extension;
         // Provide an iterator (or array?) for walking the files.
 
         /*
@@ -642,10 +644,13 @@ const iter = {
 
                 try {
                     let contents = await dir_contents(dir_path);
-                    //console.log('post await dir_contents');
+                    //console.log('post await dir_contents', contents);
                     each(contents, item => {
                         let passes_filter = true;
                         if (item instanceof File) {
+                            //console.log('file item', item);
+                            //console.log('file_filter_size_max', file_filter_size_max);
+
                             if (file_filter_size_max) {
                                 if (!(item.size <= file_filter_size_max)) {
                                     //files.push(item);
@@ -666,7 +671,14 @@ const iter = {
                                 //console.log('item', item);
                                 //throw 'stop';
                             }
-
+                            if (passes_filter && file_filter_extension) {
+                                //throw 'NYI';
+                                const extname = libpath.extname(item.name);
+                                if (extname !== file_filter_extension) {
+                                    passes_filter = false;
+                                }
+                            }
+                            //console.log('passes_filter', passes_filter);
                             if (passes_filter) {
                                 files.push(item);
                             }
@@ -684,7 +696,7 @@ const iter = {
 
                     for (const nested_path of nested_paths) {
                         //console.log('nested_path', nested_path); // Prints "Hello"
-                        yield* walk(nested_path);
+                        yield* walk(nested_path, options);
                     }
                 } catch (err) {
                     const y_obj = {
