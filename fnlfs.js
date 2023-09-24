@@ -1737,9 +1737,7 @@ const fnlfs = {
     'ensure_directory': p_mkdirp,
     'ensure_directory_exists': p_mkdirp,
     'delete_files_from_dir': delete_files_from_dir,
-
     'get_map_sha256_walk': get_map_sha256_walk,
-
     'Dir': Dir,
     'File': File,
 

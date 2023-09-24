@@ -1,0 +1,40 @@
+
+const fnlfs = {
+    'file_checksum': file_checksum,
+    'file_type': file_type,
+    'map_mime_types': map_mime_types,
+    'walk': walk,
+    'file_walk': file_walk,
+    'dir_contents': dir_contents,
+    'dir_files': dir_files,
+    'save_dir_metadata': save_dir_metadata,
+    'save_file_metadata': save_file_metadata,
+    'load_file_metadata': load_file_metadata,
+    'load': load,
+    'save': save,
+    'delete': p_unlink,
+    'move': move,
+    'exists': exists,
+    'ensure_deleted': ensure_deleted,
+    'existing': existing,
+    'fsize': fsize,
+    'is_directory': is_directory,
+    'copy': copy,
+    'copy_file': copy_file,
+    'multi_copy': multi_copy,
+    'map_metadata_handlers_by_extension': map_metadata_handlers_by_extension,
+    'map_metadata_keys_by_extension': map_metadata_keys_by_extension,
+    'walk_ensure_dir_metadata': walk_ensure_dir_metadata,
+    'ensure_dir_metadata': ensure_dir_metadata,
+    'ensure_directory': p_mkdirp,
+    'ensure_directory_exists': p_mkdirp,
+    'delete_files_from_dir': delete_files_from_dir,
+    'get_map_sha256_walk': get_map_sha256_walk,
+    'Dir': Dir,
+    'File': File,
+
+
+    's_dt_from_filename': s_dt_from_filename,
+
+    iter
+};
